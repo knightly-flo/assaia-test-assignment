@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: assaia-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: assaia-test
+  template:
+    metadata:
+      labels:
+        app: assaia-test
+    spec:
+      volumes:
+        - name: assaia-test-volume
+          emptyDir:
+            sizeLimit: 1024Mi
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        volumeMounts:
+          - mountPath: /usr/share/nginx/html
+            name: assaia-test-volume
+      - name: ffmpeg
+        image: jrottenberg/ffmpeg:4.3-alpine
+        imagePullPolicy: IfNotPresent
+        args: ["-rtsp_transport", "tcp", "-i", "rtsp://test-stream.assaia.com:8554/plane", "-f", "image2", "-update", "1", "-y", "/image/plane.jpg"]
+        volumeMounts:
+          - mountPath: /image
+            name: assaia-test-volume
